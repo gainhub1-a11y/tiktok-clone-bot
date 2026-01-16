@@ -20,7 +20,7 @@ class UploadPostService:
     
     async def publish_photo(self, image_data: bytes, caption: str, filename: str = "photo.jpg") -> dict:
         try:
-            logger.info(f"Publishing photo to Instagram: {filename}")
+            logger.info(f"Publishing photo to Tiktok: {filename}")
             
             async with aiohttp.ClientSession() as session:
                 form = aiohttp.FormData()
@@ -28,7 +28,7 @@ class UploadPostService:
                 form.add_field('title', caption[:100])
                 form.add_field('description', caption)
                 form.add_field('user', self.profile)
-                form.add_field('platform[]', 'instagram')
+               form.add_field('platform[]', 'tiktok')
                 
                 headers = {
                     'Authorization': f'Apikey {self.api_token}'
@@ -57,13 +57,13 @@ class UploadPostService:
                                 logger.error(f"Upload-Post returned error: {error_msg}")
                                 raise Exception(f"Upload-Post returned error: {error_msg}")
                             
-                            instagram_result = result.get('results', {}).get('instagram', {})
-                            if not instagram_result.get('success'):
-                                error_msg = instagram_result.get('error', 'Unknown Instagram error')
-                                logger.error(f"Instagram upload failed: {error_msg}")
-                                raise Exception(f"Instagram upload failed: {error_msg}")
+                            tiktok_result = result.get('results', {}).get('tiktok', {})
+                            if not tiktok_result.get('success'):
+                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
+                                logger.error(f"Tiktok upload failed: {error_msg}")
+                                raise Exception(f"Tiktok upload failed: {error_msg}")
                         
-                        logger.info(f"Photo published successfully to Instagram")
+                        logger.info(f"Photo published successfully to Tiktok")
                         return result
                         
                     except (ValueError, aiohttp.ContentTypeError) as e:
@@ -82,7 +82,7 @@ class UploadPostService:
     
     async def publish_carousel(self, items_data: List[bytes], caption: str) -> dict:
         try:
-            logger.info(f"Publishing photo carousel to Instagram: {len(items_data)} photos")
+            logger.info(f"Publishing photo carousel to Tiktok: {len(items_data)} photos")
             
             async with aiohttp.ClientSession() as session:
                 form = aiohttp.FormData()
@@ -93,7 +93,7 @@ class UploadPostService:
                 form.add_field('title', caption[:100])
                 form.add_field('description', caption)
                 form.add_field('user', self.profile)
-                form.add_field('platform[]', 'instagram')
+                form.add_field('platform[]', 'tiktok')
                 
                 headers = {
                     'Authorization': f'Apikey {self.api_token}'
@@ -122,13 +122,13 @@ class UploadPostService:
                                 logger.error(f"Upload-Post returned error: {error_msg}")
                                 raise Exception(f"Upload-Post returned error: {error_msg}")
                             
-                            instagram_result = result.get('results', {}).get('instagram', {})
-                            if not instagram_result.get('success'):
-                                error_msg = instagram_result.get('error', 'Unknown Instagram error')
-                                logger.error(f"Instagram upload failed: {error_msg}")
-                                raise Exception(f"Instagram upload failed: {error_msg}")
+                            instagram_result = result.get('results', {}).get('tiktok', {})
+                            if not tiktok_result.get('success'):
+                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
+                                logger.error(f"Tiktok upload failed: {error_msg}")
+                                raise Exception(f"Tiktok upload failed: {error_msg}")
                         
-                        logger.info(f"Photo carousel published successfully to Instagram")
+                        logger.info(f"Photo carousel published successfully to Tiktok")
                         return result
                         
                     except (ValueError, aiohttp.ContentTypeError) as e:
@@ -147,7 +147,7 @@ class UploadPostService:
     
     async def publish_video_carousel(self, videos_data: List[bytes], caption: str) -> dict:
         try:
-            logger.info(f"Publishing video carousel to Instagram: {len(videos_data)} videos")
+            logger.info(f"Publishing video carousel to Tiktok: {len(videos_data)} videos")
             
             results = []
             
@@ -170,7 +170,7 @@ class UploadPostService:
     
     async def publish_mixed_carousel(self, items: List[Tuple[bytes, str]], caption: str) -> dict:
         try:
-            logger.info(f"Publishing mixed carousel to Instagram: {len(items)} items")
+            logger.info(f"Publishing mixed carousel to Tiktok: {len(items)} items")
             
             photos = []
             videos = []
@@ -216,7 +216,7 @@ class UploadPostService:
     
     async def publish_reel(self, video_data: bytes, caption: str, filename: str = "reel.mp4") -> dict:
         try:
-            logger.info(f"Publishing reel to Instagram: {filename}")
+            logger.info(f"Publishing reel to Tiktok: {filename}")
             
             async with aiohttp.ClientSession() as session:
                 form = aiohttp.FormData()
@@ -224,7 +224,7 @@ class UploadPostService:
                 form.add_field('title', caption[:100])
                 form.add_field('description', caption)
                 form.add_field('user', self.profile)
-                form.add_field('platform[]', 'instagram')
+                form.add_field('platform[]', 'tiktok')
                 
                 headers = {
                     'Authorization': f'Apikey {self.api_token}'
@@ -253,13 +253,13 @@ class UploadPostService:
                                 logger.error(f"Upload-Post returned error: {error_msg}")
                                 raise Exception(f"Upload-Post returned error: {error_msg}")
                             
-                            instagram_result = result.get('results', {}).get('instagram', {})
+                            instagram_result = result.get('results', {}).get('tiktok', {})
                             if not instagram_result.get('success'):
-                                error_msg = instagram_result.get('error', 'Unknown Instagram error')
-                                logger.error(f"Instagram upload failed: {error_msg}")
-                                raise Exception(f"Instagram upload failed: {error_msg}")
+                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
+                                logger.error(f"Tiktok upload failed: {error_msg}")
+                                raise Exception(f"Tiktok upload failed: {error_msg}")
                         
-                        logger.info(f"Reel published successfully to Instagram")
+                        logger.info(f"Reel published successfully to Tiktok")
                         return result
                         
                     except (ValueError, aiohttp.ContentTypeError) as e:
