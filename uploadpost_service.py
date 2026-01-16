@@ -20,7 +20,7 @@ class UploadPostService:
     
     async def publish_photo(self, image_data: bytes, caption: str, filename: str = "photo.jpg") -> dict:
         try:
-            logger.info(f"Publishing photo to Tiktok: {filename}")
+            logger.info(f"Publishing photo to TikTok: {filename}")
             
             async with aiohttp.ClientSession() as session:
                 form = aiohttp.FormData()
@@ -28,7 +28,7 @@ class UploadPostService:
                 form.add_field('title', caption[:100])
                 form.add_field('description', caption)
                 form.add_field('user', self.profile)
-               form.add_field('platform[]', 'tiktok')
+                form.add_field('platform[]', 'tiktok')
                 
                 headers = {
                     'Authorization': f'Apikey {self.api_token}'
@@ -59,11 +59,11 @@ class UploadPostService:
                             
                             tiktok_result = result.get('results', {}).get('tiktok', {})
                             if not tiktok_result.get('success'):
-                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
-                                logger.error(f"Tiktok upload failed: {error_msg}")
-                                raise Exception(f"Tiktok upload failed: {error_msg}")
+                                error_msg = tiktok_result.get('error', 'Unknown TikTok error')
+                                logger.error(f"TikTok upload failed: {error_msg}")
+                                raise Exception(f"TikTok upload failed: {error_msg}")
                         
-                        logger.info(f"Photo published successfully to Tiktok")
+                        logger.info(f"Photo published successfully to TikTok")
                         return result
                         
                     except (ValueError, aiohttp.ContentTypeError) as e:
@@ -82,7 +82,7 @@ class UploadPostService:
     
     async def publish_carousel(self, items_data: List[bytes], caption: str) -> dict:
         try:
-            logger.info(f"Publishing photo carousel to Tiktok: {len(items_data)} photos")
+            logger.info(f"Publishing photo carousel to TikTok: {len(items_data)} photos")
             
             async with aiohttp.ClientSession() as session:
                 form = aiohttp.FormData()
@@ -122,13 +122,13 @@ class UploadPostService:
                                 logger.error(f"Upload-Post returned error: {error_msg}")
                                 raise Exception(f"Upload-Post returned error: {error_msg}")
                             
-                            instagram_result = result.get('results', {}).get('tiktok', {})
+                            tiktok_result = result.get('results', {}).get('tiktok', {})
                             if not tiktok_result.get('success'):
-                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
-                                logger.error(f"Tiktok upload failed: {error_msg}")
-                                raise Exception(f"Tiktok upload failed: {error_msg}")
+                                error_msg = tiktok_result.get('error', 'Unknown TikTok error')
+                                logger.error(f"TikTok upload failed: {error_msg}")
+                                raise Exception(f"TikTok upload failed: {error_msg}")
                         
-                        logger.info(f"Photo carousel published successfully to Tiktok")
+                        logger.info(f"Photo carousel published successfully to TikTok")
                         return result
                         
                     except (ValueError, aiohttp.ContentTypeError) as e:
@@ -147,12 +147,12 @@ class UploadPostService:
     
     async def publish_video_carousel(self, videos_data: List[bytes], caption: str) -> dict:
         try:
-            logger.info(f"Publishing video carousel to Tiktok: {len(videos_data)} videos")
+            logger.info(f"Publishing video carousel to TikTok: {len(videos_data)} videos")
             
             results = []
             
             for idx, video_data in enumerate(videos_data):
-                logger.info(f"Publishing video {idx+1}/{len(videos_data)} as individual reel...")
+                logger.info(f"Publishing video {idx+1}/{len(videos_data)} as individual video...")
                 try:
                     result = await self.publish_reel(video_data, caption, f"video_{idx}.mp4")
                     results.append(result)
@@ -170,7 +170,7 @@ class UploadPostService:
     
     async def publish_mixed_carousel(self, items: List[Tuple[bytes, str]], caption: str) -> dict:
         try:
-            logger.info(f"Publishing mixed carousel to Tiktok: {len(items)} items")
+            logger.info(f"Publishing mixed carousel to TikTok: {len(items)} items")
             
             photos = []
             videos = []
@@ -194,88 +194,4 @@ class UploadPostService:
                     results['photos'] = photo_result
                     logger.info(f"Photo carousel published successfully")
                 except Exception as e:
-                    logger.error(f"Failed to publish photo carousel: {e}")
-                    results['photos'] = {"success": False, "error": str(e)}
-            
-            if videos:
-                logger.info(f"Publishing video carousel: {len(videos)} videos as separate reels")
-                try:
-                    video_result = await self.publish_video_carousel(videos, caption)
-                    results['videos'] = video_result
-                    logger.info(f"Video carousel published successfully")
-                except Exception as e:
-                    logger.error(f"Failed to publish video carousel: {e}")
-                    results['videos'] = {"success": False, "error": str(e)}
-            
-            logger.info(f"Mixed carousel published: photos={bool(photos)}, videos={bool(videos)}")
-            return {"success": True, "results": results}
-        
-        except Exception as e:
-            logger.error(f"Failed to publish mixed carousel: {str(e)}")
-            raise
-    
-    async def publish_reel(self, video_data: bytes, caption: str, filename: str = "reel.mp4") -> dict:
-        try:
-            logger.info(f"Publishing reel to Tiktok: {filename}")
-            
-            async with aiohttp.ClientSession() as session:
-                form = aiohttp.FormData()
-                form.add_field('video', video_data, filename=filename, content_type='video/mp4')
-                form.add_field('title', caption[:100])
-                form.add_field('description', caption)
-                form.add_field('user', self.profile)
-                form.add_field('platform[]', 'tiktok')
-                
-                headers = {
-                    'Authorization': f'Apikey {self.api_token}'
-                }
-                
-                url = f"{self.api_base_url}/api/upload"
-                logger.info(f"Sending request to: {url}")
-                
-                async with session.post(url, data=form, headers=headers) as response:
-                    response_status = response.status
-                    response_text = await response.text()
-                    
-                    logger.info(f"Upload-Post response status: {response_status}")
-                    
-                    if response_status not in [200, 201]:
-                        logger.error(f"Upload-Post error response: {response_text}")
-                        raise Exception(f"Upload-Post API error: {response_status} - {response_text}")
-                    
-                    try:
-                        result = await response.json()
-                        logger.info(f"Upload-Post JSON response: {result}")
-                        
-                        if isinstance(result, dict):
-                            if result.get('error') or result.get('status') == 'error':
-                                error_msg = result.get('message', result.get('error', 'Unknown error'))
-                                logger.error(f"Upload-Post returned error: {error_msg}")
-                                raise Exception(f"Upload-Post returned error: {error_msg}")
-                            
-                            instagram_result = result.get('results', {}).get('tiktok', {})
-                            if not instagram_result.get('success'):
-                                error_msg = tiktok_result.get('error', 'Unknown Tiktok error')
-                                logger.error(f"Tiktok upload failed: {error_msg}")
-                                raise Exception(f"Tiktok upload failed: {error_msg}")
-                        
-                        logger.info(f"Reel published successfully to Tiktok")
-                        return result
-                        
-                    except (ValueError, aiohttp.ContentTypeError) as e:
-                        logger.warning(f"Non-JSON response from Upload-Post: {e}")
-                        logger.info(f"Response text: {response_text}")
-                        
-                        if response_status in [200, 201]:
-                            logger.info(f"Reel published (non-JSON response)")
-                            return {"status": "success", "message": "Published", "response": response_text}
-                        else:
-                            raise Exception(f"Invalid response format: {response_text}")
-        
-        except Exception as e:
-            logger.error(f"Failed to publish reel: {str(e)}")
-            raise
-
-
-def create_uploadpost_service() -> UploadPostService:
-    return UploadPostService()
+                    logger.error(f"Failed to publish photo
