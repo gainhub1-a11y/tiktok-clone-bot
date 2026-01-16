@@ -1,6 +1,6 @@
 """
-Instagram Clone Bot - Main Application
-Monitors Telegram channel and publishes content to Instagram
+TikTok Clone Bot - Main Application
+Monitors Telegram channel and publishes content to TikTok
 """
 import logging
 import asyncio
@@ -29,7 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class InstagramCloneBot:
+class TikTokCloneBot:
     """Main bot class that orchestrates all services"""
     
     def __init__(self):
@@ -86,7 +86,7 @@ class InstagramCloneBot:
     def run(self):
         """Start the bot"""
         try:
-            logger.info("Starting Instagram Clone Bot...")
+            logger.info("Starting TikTok Clone Bot...")
             
             # Create application
             self.app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
@@ -120,7 +120,7 @@ class InstagramCloneBot:
 
 def main():
     """Main entry point"""
-    bot = InstagramCloneBot()
+    bot = TikTokCloneBot()
     bot.run()
 
 
