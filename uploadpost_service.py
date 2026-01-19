@@ -194,4 +194,88 @@ class UploadPostService:
                     results['photos'] = photo_result
                     logger.info(f"Photo carousel published successfully")
                 except Exception as e:
-                    logger.error(f"Failed to publish photo
+                    logger.error(f"Failed to publish photo carousel: {e}")
+                    results['photos'] = {"success": False, "error": str(e)}
+            
+            if videos:
+                logger.info(f"Publishing video carousel: {len(videos)} videos as separate posts")
+                try:
+                    video_result = await self.publish_video_carousel(videos, caption)
+                    results['videos'] = video_result
+                    logger.info(f"Video carousel published successfully")
+                except Exception as e:
+                    logger.error(f"Failed to publish video carousel: {e}")
+                    results['videos'] = {"success": False, "error": str(e)}
+            
+            logger.info(f"Mixed carousel published: photos={bool(photos)}, videos={bool(videos)}")
+            return {"success": True, "results": results}
+        
+        except Exception as e:
+            logger.error(f"Failed to publish mixed carousel: {str(e)}")
+            raise
+    
+    async def publish_reel(self, video_data: bytes, caption: str, filename: str = "video.mp4") -> dict:
+        try:
+            logger.info(f"Publishing video to TikTok: {filename}")
+            
+            async with aiohttp.ClientSession() as session:
+                form = aiohttp.FormData()
+                form.add_field('video', video_data, filename=filename, content_type='video/mp4')
+                form.add_field('title', caption[:100])
+                form.add_field('description', caption)
+                form.add_field('user', self.profile)
+                form.add_field('platform[]', 'tiktok')
+                
+                headers = {
+                    'Authorization': f'Apikey {self.api_token}'
+                }
+                
+                url = f"{self.api_base_url}/api/upload"
+                logger.info(f"Sending request to: {url}")
+                
+                async with session.post(url, data=form, headers=headers) as response:
+                    response_status = response.status
+                    response_text = await response.text()
+                    
+                    logger.info(f"Upload-Post response status: {response_status}")
+                    
+                    if response_status not in [200, 201]:
+                        logger.error(f"Upload-Post error response: {response_text}")
+                        raise Exception(f"Upload-Post API error: {response_status} - {response_text}")
+                    
+                    try:
+                        result = await response.json()
+                        logger.info(f"Upload-Post JSON response: {result}")
+                        
+                        if isinstance(result, dict):
+                            if result.get('error') or result.get('status') == 'error':
+                                error_msg = result.get('message', result.get('error', 'Unknown error'))
+                                logger.error(f"Upload-Post returned error: {error_msg}")
+                                raise Exception(f"Upload-Post returned error: {error_msg}")
+                            
+                            tiktok_result = result.get('results', {}).get('tiktok', {})
+                            if not tiktok_result.get('success'):
+                                error_msg = tiktok_result.get('error', 'Unknown TikTok error')
+                                logger.error(f"TikTok upload failed: {error_msg}")
+                                raise Exception(f"TikTok upload failed: {error_msg}")
+                        
+                        logger.info(f"Video published successfully to TikTok")
+                        return result
+                        
+                    except (ValueError, aiohttp.ContentTypeError) as e:
+                        logger.warning(f"Non-JSON response from Upload-Post: {e}")
+                        logger.info(f"Response text: {response_text}")
+                        
+                        if response_status in [200, 201]:
+                            logger.info(f"Video published (non-JSON response)")
+                            return {"status": "success", "message": "Published", "response": response_text}
+                        else:
+                            raise Exception(f"Invalid response format: {response_text}")
+        
+        except Exception as e:
+            logger.error(f"Failed to publish video: {str(e)}")
+            raise
+
+
+def create_uploadpost_service() -> UploadPostService:
+    return UploadPostService()
